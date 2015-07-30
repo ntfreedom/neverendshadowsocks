@@ -18,6 +18,7 @@
 from __future__ import absolute_import, division, print_function, \
     with_statement
 
+import sys
 import time
 import socket
 import errno
@@ -36,6 +37,12 @@ TIMEOUTS_CLEAN_SIZE = 512
 TIMEOUT_PRECISION = 4
 
 MSG_FASTOPEN = 0x20000000
+
+TCP_FASTOPEN = 23
+TCP_FASTOPEN_VAL = 5
+if sys.platform == 'darwin':
+    TCP_FASTOPEN = 0x105
+    TCP_FASTOPEN_VAL = 1
 
 # SOCKS command definition
 CMD_CONNECT = 1
@@ -586,7 +593,8 @@ class TCPRelay(object):
         server_socket.listen(1024)
         if config['fast_open']:
             try:
-                server_socket.setsockopt(socket.SOL_TCP, 23, 5)
+                server_socket.setsockopt(socket.SOL_TCP, TCP_FASTOPEN,
+                                         TCP_FASTOPEN_VAL)
             except socket.error:
                 logging.error('warning: fast open is not available')
                 self._config['fast_open'] = False
